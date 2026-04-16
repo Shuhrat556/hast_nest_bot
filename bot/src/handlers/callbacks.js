@@ -289,9 +289,9 @@ async function handleReasonSelect(ctx, userId, data, groupId) {
   }
 
   const reasonMap = {
-    outside: t(lang, 'reasonPresetOutside'),
+    outside: t(lang, 'reasonPresetOutsideReport'),
     sick: t(lang, 'reasonPresetSick'),
-    no_reason: t(lang, 'reasonPresetNoReason'),
+    no_reason: t(lang, 'reasonPresetNoReasonReport'),
   };
   const reason = reasonMap[key];
 
