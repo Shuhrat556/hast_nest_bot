@@ -1,0 +1,21 @@
+services:
+  - type: worker
+    name: hast-nest-bot
+    runtime: node
+    rootDir: bot
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: BOT_TOKEN
+        sync: false
+      - key: MONGO_URI
+        sync: false
+      - key: GROUP_ID
+        sync: false
+      - key: ADMIN_ID
+        sync: false
