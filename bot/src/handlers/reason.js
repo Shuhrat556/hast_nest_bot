@@ -1,7 +1,8 @@
-const { clearFlow, getUserState } = require('../utils/userState');
+const { clearFlow, getUserState, markReportSubmitted } = require('../utils/userState');
 const { sendPartialAttendanceReport } = require('../services/reportService');
 const { replyWithError } = require('../utils/handlerErrors');
 const { normalizeLang, t } = require('../utils/i18n');
+const { mainReplyKeyboard } = require('../utils/keyboards');
 
 /**
  * @param {import('telegraf').Telegraf} bot
@@ -56,6 +57,7 @@ function registerReason(bot, deps) {
           reason,
           lang,
         });
+        await markReportSubmitted(userId);
       } catch (err) {
         await clearFlow(userId);
         throw err;
@@ -63,7 +65,7 @@ function registerReason(bot, deps) {
 
       await clearFlow(userId);
 
-      await ctx.reply(t(lang, 'reportSentPartial')).catch(() => {});
+      await ctx.reply(t(lang, 'reportSentPartial'), mainReplyKeyboard()).catch(() => {});
     } catch (err) {
       await replyWithError(ctx, err, { context: 'reason' });
     }

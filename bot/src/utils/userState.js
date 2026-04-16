@@ -56,8 +56,20 @@ async function getUserState(userId) {
   }
 }
 
+/**
+ * Mark that user has submitted today's report; resets reminder flag.
+ * @param {number} userId
+ */
+async function markReportSubmitted(userId) {
+  return upsertUserState(userId, {
+    lastReportAt: new Date(),
+    reminderSentAt: null,
+  });
+}
+
 module.exports = {
   upsertUserState,
   clearFlow,
   getUserState,
+  markReportSubmitted,
 };

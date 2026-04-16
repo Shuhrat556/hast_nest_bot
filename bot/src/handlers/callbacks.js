@@ -2,10 +2,16 @@ const Room = require('../models/Room');
 const {
   CALLBACK,
   countInlineKeyboard,
+  mainReplyKeyboard,
   reasonInlineKeyboard,
   roomsInlineKeyboard,
 } = require('../utils/keyboards');
-const { upsertUserState, clearFlow, getUserState } = require('../utils/userState');
+const {
+  upsertUserState,
+  clearFlow,
+  getUserState,
+  markReportSubmitted,
+} = require('../utils/userState');
 const {
   sendFullAttendanceReport,
   sendPartialAttendanceReport,
@@ -216,6 +222,7 @@ async function handleCountSelect(ctx, userId, data, groupId) {
         max,
         lang,
       });
+      await markReportSubmitted(userId);
     } catch (err) {
       await clearFlow(userId);
       throw err;
@@ -226,7 +233,7 @@ async function handleCountSelect(ctx, userId, data, groupId) {
         reply_markup: { inline_keyboard: [] },
       });
     } catch (e) {
-      await ctx.reply(t(lang, 'reportSentFull')).catch(() => {});
+      await ctx.reply(t(lang, 'reportSentFull'), mainReplyKeyboard()).catch(() => {});
     }
 
     await clearFlow(userId);
@@ -297,6 +304,7 @@ async function handleReasonSelect(ctx, userId, data, groupId) {
       reason,
       lang,
     });
+    await markReportSubmitted(userId);
   } catch (err) {
     await clearFlow(userId);
     throw err;
@@ -309,7 +317,7 @@ async function handleReasonSelect(ctx, userId, data, groupId) {
       reply_markup: { inline_keyboard: [] },
     });
   } catch (_) {
-    await ctx.reply(t(lang, 'reportSentPartial')).catch(() => {});
+    await ctx.reply(t(lang, 'reportSentPartial'), mainReplyKeyboard()).catch(() => {});
   }
 }
 

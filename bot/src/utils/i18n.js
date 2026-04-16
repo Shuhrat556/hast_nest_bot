@@ -32,6 +32,8 @@ const DICT = {
     reasonPresetSick: 'Sick',
     reasonPresetNoReason: 'No reason provided',
     reasonPresetCustom: 'Write manually',
+    dailyReminder:
+      '🌟 Please do your Hast-Nest report for today.\nIt is your daily duty, and your update helps the whole team. Thank you!',
   },
   ru: {
     chooseLanguage: '🌐 Пожалуйста, выберите язык:',
@@ -64,6 +66,8 @@ const DICT = {
     reasonPresetSick: 'Болен',
     reasonPresetNoReason: 'Без причины',
     reasonPresetCustom: 'Написать вручную',
+    dailyReminder:
+      '🌟 Пожалуйста, сделайте сегодня отчет Hast-Nest.\nЭто ваша ежедневная задача, и ваш отчет важен для всей команды. Спасибо!',
   },
   tj: {
     chooseLanguage: '🌐 Лутфан забонро интихоб кунед:',
@@ -96,6 +100,8 @@ const DICT = {
     reasonPresetSick: 'Бемор аст',
     reasonPresetNoReason: 'Бе сабаб навишта шуд',
     reasonPresetCustom: 'Худам менависам',
+    dailyReminder:
+      '🌟 Лутфан имрӯз ҳисоботи Hast-Nest-ро иҷро кунед.\nИн вазифаи ҳаррӯзаи шумост ва хабар додани шумо барои тамоми даста муҳим аст. Раҳмат!',
   },
 };
 

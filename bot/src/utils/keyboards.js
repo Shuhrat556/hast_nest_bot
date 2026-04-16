@@ -8,6 +8,16 @@ const CALLBACK = {
   reasonPrefix: 'rsn:',
 };
 
+function mainReplyKeyboard() {
+  return Markup.keyboard([['/start', '/language']])
+    .resize()
+    .persistent();
+}
+
+function removeReplyKeyboard() {
+  return Markup.removeKeyboard();
+}
+
 function languageInlineKeyboard() {
   return Markup.inlineKeyboard([
     [
@@ -91,6 +101,8 @@ function reasonInlineKeyboard(lang) {
 
 module.exports = {
   CALLBACK,
+  mainReplyKeyboard,
+  removeReplyKeyboard,
   languageInlineKeyboard,
   roomsInlineKeyboard,
   countInlineKeyboard,

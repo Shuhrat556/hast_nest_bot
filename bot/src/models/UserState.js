@@ -48,6 +48,15 @@ const userStateSchema = new mongoose.Schema(
       default: null,
       min: 0,
     },
+    lastReportAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
+    reminderSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
