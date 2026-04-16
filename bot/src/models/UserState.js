@@ -57,6 +57,12 @@ const userStateSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    lastReportedRoom: {
+      type: String,
+      default: null,
+      maxlength: 200,
+      index: true,
+    },
   },
   { timestamps: true }
 );

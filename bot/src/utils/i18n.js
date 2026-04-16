@@ -36,6 +36,8 @@ const DICT = {
     reasonPresetNoReasonReport: 'Toza karda shudaand',
     dailyReminder:
       '🌟 Please do your Hast-Nest report for today.\nIt is your daily duty, and your update helps the whole team. Thank you!',
+    dailySummaryReminder:
+      '⏰ 22:00 summary: report for {room} is still missing.\nPlease submit your Hast-Nest report now.',
   },
   ru: {
     chooseLanguage: '🌐 Пожалуйста, выберите язык:',
@@ -72,6 +74,8 @@ const DICT = {
     reasonPresetNoReasonReport: 'Toza karda shudaand',
     dailyReminder:
       '🌟 Пожалуйста, сделайте сегодня отчет Hast-Nest.\nЭто ваша ежедневная задача, и ваш отчет важен для всей команды. Спасибо!',
+    dailySummaryReminder:
+      '⏰ Сводка 22:00: отчет по {room} еще не сдан.\nПожалуйста, отправьте ваш Hast-Nest отчет сейчас.',
   },
   tj: {
     chooseLanguage: '🌐 Лутфан забонро интихоб кунед:',
@@ -108,6 +112,8 @@ const DICT = {
     reasonPresetNoReasonReport: 'Toza karda shudaand',
     dailyReminder:
       '🌟 Лутфан имрӯз ҳисоботи Hast-Nest-ро иҷро кунед.\nИн вазифаи ҳаррӯзаи шумост ва хабар додани шумо барои тамоми даста муҳим аст. Раҳмат!',
+    dailySummaryReminder:
+      '⏰ Хулосаи 22:00: ҳисобот барои {room} ҳанӯз супорида нашудааст.\nЛутфан ҳозир ҳисоботи Hast-Nest-ро супоред.',
   },
 };
 

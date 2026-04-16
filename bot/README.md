@@ -44,6 +44,8 @@ Set variables in `.env` (see `.env.example`):
 | `ADMIN_ID`  | Telegram user ID allowed to run `/addroom`      |
 | `NODE_ENV`  | `development` (default) or `production` — controls log format |
 | `LOG_LEVEL` | Winston level: `error`, `warn`, `info`, … (default `info`) |
+| `REPORT_TIMEZONE` | Time zone for daily scheduler (default `Asia/Dushanbe`) |
+| `DAILY_SUMMARY_HOUR` | Hour (0-23) to send group summary of missing room reports (default `22`) |
 | `PORT`      | Optional; if set, a tiny `/health` server starts |
 
 Logs use **Winston**. In `production`, the console transport emits JSON lines suitable for aggregators; in development, logs are colorized plain text.
@@ -78,7 +80,7 @@ This process is a **long-running worker** (Telegram long polling), not a typical
 2. In the Render dashboard, create a **Background Worker** (recommended) or a **Web Service**.
    - **Background Worker**: set **Build Command** to `npm install` and **Start Command** to `npm start`. No `PORT` is required.
    - **Web Service**: same build/start commands. Optionally set `PORT` in the environment (Render injects it automatically) so the bundled `/health` endpoint responds for platform checks.
-3. Add environment variables: `BOT_TOKEN`, `MONGO_URI`, `GROUP_ID`, `ADMIN_ID`, and optionally `NODE_ENV=production`, `LOG_LEVEL`.
+3. Add environment variables: `BOT_TOKEN`, `MONGO_URI`, `GROUP_ID`, `ADMIN_ID`, and optionally `NODE_ENV=production`, `LOG_LEVEL`, `REPORT_TIMEZONE`, `DAILY_SUMMARY_HOUR`.
 4. Deploy. Watch logs to confirm `MongoDB connected` and `Bot is running`.
 
 **Note:** Only one instance should run `bot.launch()` with the same token at a time, or Telegram will disconnect duplicate polling clients.

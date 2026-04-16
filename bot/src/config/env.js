@@ -27,6 +27,8 @@ const envSchema = z.object({
       invalid_type_error: 'ADMIN_ID must be a number',
     })
     .int('ADMIN_ID must be an integer'),
+  REPORT_TIMEZONE: z.string().default('Asia/Dushanbe'),
+  DAILY_SUMMARY_HOUR: z.coerce.number().int().min(0).max(23).default(22),
   PORT: z.preprocess((v) => {
     if (v === undefined || v === null || v === '') return undefined;
     const n = Number(v);

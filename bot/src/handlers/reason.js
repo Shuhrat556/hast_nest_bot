@@ -57,7 +57,7 @@ function registerReason(bot, deps) {
           reason,
           lang,
         });
-        await markReportSubmitted(userId);
+        await markReportSubmitted(userId, room);
       } catch (err) {
         await clearFlow(userId);
         throw err;

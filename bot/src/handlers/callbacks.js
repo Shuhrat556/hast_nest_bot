@@ -222,7 +222,7 @@ async function handleCountSelect(ctx, userId, data, groupId) {
         max,
         lang,
       });
-      await markReportSubmitted(userId);
+      await markReportSubmitted(userId, state.room);
     } catch (err) {
       await clearFlow(userId);
       throw err;
@@ -304,7 +304,7 @@ async function handleReasonSelect(ctx, userId, data, groupId) {
       reason,
       lang,
     });
-    await markReportSubmitted(userId);
+    await markReportSubmitted(userId, state.room);
   } catch (err) {
     await clearFlow(userId);
     throw err;

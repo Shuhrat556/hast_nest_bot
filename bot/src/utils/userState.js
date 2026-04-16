@@ -59,11 +59,13 @@ async function getUserState(userId) {
 /**
  * Mark that user has submitted today's report; resets reminder flag.
  * @param {number} userId
+ * @param {string | null} roomName
  */
-async function markReportSubmitted(userId) {
+async function markReportSubmitted(userId, roomName = null) {
   return upsertUserState(userId, {
     lastReportAt: new Date(),
     reminderSentAt: null,
+    lastReportedRoom: roomName || null,
   });
 }
 

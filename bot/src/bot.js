@@ -25,6 +25,7 @@ const { registerReason } = require('./handlers/reason');
 const { registerAdmin } = require('./handlers/admin');
 const { ensureDefaultRooms } = require('./services/roomSeedService');
 const { startReminderJob } = require('./services/reminderService');
+const { startDailySummaryJob } = require('./services/dailySummaryService');
 const { replyWithError } = require('./utils/handlerErrors');
 
 function maybeBindHealthServer() {
@@ -82,6 +83,11 @@ async function main() {
   registerAdmin(bot, { adminId: env.ADMIN_ID });
   registerReason(bot, { groupId: env.GROUP_ID });
   startReminderJob(bot);
+  startDailySummaryJob(bot, {
+    groupId: env.GROUP_ID,
+    timeZone: env.REPORT_TIMEZONE,
+    hour: env.DAILY_SUMMARY_HOUR,
+  });
 
   log.info('Starting bot (long polling)…');
   await bot.launch();
