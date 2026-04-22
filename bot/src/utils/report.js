@@ -1,5 +1,5 @@
 /**
- * `Komnata 3` -> `3`, otherwise keeps source.
+ * `K 3` -> `3`, otherwise keeps source.
  * @param {string} room
  * @returns {string}
  */

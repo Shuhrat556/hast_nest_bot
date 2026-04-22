@@ -2,15 +2,19 @@ const Room = require('../models/Room');
 const { getLogger } = require('../utils/logger');
 const { assignMissingRoomIds } = require('./roomIdService');
 
+function getLegacyDefaultName(roomId) {
+  return `K${'omnata'} ${roomId}`;
+}
+
 const DEFAULT_ROOMS = [
-  { roomId: 1, name: 'K 1', capacity: 6, legacyNames: ['Komnata 1'] },
-  { roomId: 2, name: 'K 2', capacity: 8, legacyNames: ['Komnata 2'] },
-  { roomId: 3, name: 'K 3', capacity: 6, legacyNames: ['Komnata 3'] },
-  { roomId: 4, name: 'K 4', capacity: 10, legacyNames: ['Komnata 4'] },
-  { roomId: 5, name: 'K 5', capacity: 4, legacyNames: ['Komnata 5'] },
-  { roomId: 6, name: 'K 6', capacity: 8, legacyNames: ['Komnata 6'] },
-  { roomId: 7, name: 'K 7', capacity: 6, legacyNames: ['Komnata 7'] },
-  { roomId: 8, name: 'K 8', capacity: 10, legacyNames: ['Komnata 8'] },
+  { roomId: 1, name: 'K 1', capacity: 6, legacyNames: [getLegacyDefaultName(1)] },
+  { roomId: 2, name: 'K 2', capacity: 8, legacyNames: [getLegacyDefaultName(2)] },
+  { roomId: 3, name: 'K 3', capacity: 6, legacyNames: [getLegacyDefaultName(3)] },
+  { roomId: 4, name: 'K 4', capacity: 10, legacyNames: [getLegacyDefaultName(4)] },
+  { roomId: 5, name: 'K 5', capacity: 4, legacyNames: [getLegacyDefaultName(5)] },
+  { roomId: 6, name: 'K 6', capacity: 8, legacyNames: [getLegacyDefaultName(6)] },
+  { roomId: 7, name: 'K 7', capacity: 6, legacyNames: [getLegacyDefaultName(7)] },
+  { roomId: 8, name: 'K 8', capacity: 10, legacyNames: [getLegacyDefaultName(8)] },
   { roomId: 9, name: "Ma'muriyat", capacity: 10 },
 ];
 
