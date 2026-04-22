@@ -19,6 +19,7 @@ const {
 const { broadcastToKnownUsers } = require('../services/broadcastService');
 const { cleanupRoomData } = require('../services/roomSeedService');
 const { canonicalRoomName } = require('../services/roomService');
+const { normalizeLang, t } = require('../utils/i18n');
 
 function parseSetRoomCommand(messageText) {
   const raw = typeof messageText === 'string' ? messageText : '';
@@ -55,6 +56,11 @@ function parseDeleteRoomCommand(messageText) {
   }
   return { success: true, id };
 }
+
+async function getUserLang(userId) {
+  const state = await getUserState(userId);
+  return normalizeLang(state?.language);
+}
 /**
  * @param {import('telegraf').Telegraf} bot
  * @param {{ adminId: number }} deps
@@ -66,10 +72,11 @@ function registerAdmin(bot, deps) {
     try {
       const uid = ctx.from?.id;
       if (!uid || uid !== adminId) {
-        await ctx.reply('You are not authorized to use this command.');
+        await ctx.reply(t('en', 'adminNotAuthorized'));
         return;
       }
 
+      const lang = await getUserLang(uid);
       const parsed = parseAddRoomCommand(ctx.message?.text);
       if (!parsed.success) {
         if (parsed.error) {
@@ -95,7 +102,7 @@ function registerAdmin(bot, deps) {
       });
 
       await ctx.reply(
-        `Room added: #${roomId} ${parsed.data.name} (capacity ${parsed.data.capacity})`
+        `#${roomId} ${parsed.data.name} (${t(lang, 'reportPresent')}: ${parsed.data.capacity})`
       );
     } catch (err) {
       if (err && err.code === 11000) {
@@ -110,13 +117,14 @@ function registerAdmin(bot, deps) {
     try {
       const uid = ctx.from?.id;
       if (!uid || uid !== adminId) {
-        await ctx.reply('You are not authorized to use this command.');
+        await ctx.reply(t('en', 'adminNotAuthorized'));
         return;
       }
 
+      const lang = await getUserLang(uid);
       const rooms = await Room.find().sort({ roomId: 1, name: 1 }).lean();
       if (!rooms.length) {
-        await ctx.reply("Rooms bo'sh. /setroom bilan to'ldiring.");
+        await ctx.reply(t(lang, 'adminRoomsEmpty'));
         return;
       }
 
@@ -133,10 +141,11 @@ function registerAdmin(bot, deps) {
     try {
       const uid = ctx.from?.id;
       if (!uid || uid !== adminId) {
-        await ctx.reply('You are not authorized to use this command.');
+        await ctx.reply(t('en', 'adminNotAuthorized'));
         return;
       }
 
+      const lang = await getUserLang(uid);
       const parsed = parseSetRoomCommand(ctx.message?.text);
       if (!parsed.success) {
         await ctx.reply(parsed.message);
@@ -147,7 +156,9 @@ function registerAdmin(bot, deps) {
       const normalizedName = canonicalRoomName(parsed.data.name);
       const sameName = await Room.findOne({ name: normalizedName });
       if (sameName && sameName.roomId !== id) {
-        await ctx.reply(`Room name "${normalizedName}" already exists as #${sameName.roomId}.`);
+        await ctx.reply(
+          `Room name "${normalizedName}" already exists as #${sameName.roomId}.`
+        );
         return;
       }
 
@@ -156,7 +167,7 @@ function registerAdmin(bot, deps) {
         { $set: { roomId: id, name: normalizedName, capacity } },
         { upsert: true, new: true, runValidators: true }
       );
-      await ctx.reply(`✅ Saved: #${id} ${normalizedName} (capacity ${capacity})`);
+      await ctx.reply(`✅ #${id} ${normalizedName} (${t(lang, 'reportPresent')}: ${capacity})`);
     } catch (err) {
       if (err && err.code === 11000) {
         await ctx.reply('Duplicate room id/name. Try another id or name.');
@@ -170,10 +181,11 @@ function registerAdmin(bot, deps) {
     try {
       const uid = ctx.from?.id;
       if (!uid || uid !== adminId) {
-        await ctx.reply('You are not authorized to use this command.');
+        await ctx.reply(t('en', 'adminNotAuthorized'));
         return;
       }
 
+      const lang = await getUserLang(uid);
       const parsed = parseDeleteRoomCommand(ctx.message?.text);
       if (!parsed.success) {
         await ctx.reply(parsed.message);
@@ -182,10 +194,10 @@ function registerAdmin(bot, deps) {
 
       const result = await Room.deleteOne({ roomId: parsed.id });
       if (!result.deletedCount) {
-        await ctx.reply(`Room #${parsed.id} topilmadi.`);
+        await ctx.reply(t(lang, 'adminRoomNotFound', { id: parsed.id }));
         return;
       }
-      await ctx.reply(`🗑️ Room #${parsed.id} o'chirildi.`);
+      await ctx.reply(t(lang, 'adminRoomDeleted', { id: parsed.id }));
     } catch (err) {
       await replyWithError(ctx, err, { context: 'delroom' });
     }
@@ -195,14 +207,13 @@ function registerAdmin(bot, deps) {
     try {
       const uid = ctx.from?.id;
       if (!uid || uid !== adminId) {
-        await ctx.reply('You are not authorized to use this command.');
+        await ctx.reply(t('en', 'adminNotAuthorized'));
         return;
       }
 
+      const lang = await getUserLang(uid);
       const result = await cleanupRoomData();
-      await ctx.reply(
-        `🧹 Data cleaned.\nRenamed: ${result.renamed}\nRemoved duplicates: ${result.removedDuplicates}\nNormalized IDs: ${result.normalizedIds}\nFixed capacities: ${result.fixedCapacities}\nTotal rooms: ${result.totalRooms}`
-      );
+      await ctx.reply(t(lang, 'adminDataCleaned', result));
     } catch (err) {
       await replyWithError(ctx, err, { context: 'cleandata' });
     }
@@ -212,20 +223,18 @@ function registerAdmin(bot, deps) {
     try {
       const uid = ctx.from?.id;
       if (!uid || uid !== adminId) {
-        await ctx.reply('You are not authorized to use this command.');
+        await ctx.reply(t('en', 'adminNotAuthorized'));
         return;
       }
 
+      const lang = await getUserLang(uid);
       await upsertUserState(uid, {
         step: FLOW_STEPS.ADMIN_BROADCAST_WAIT_TEXT,
       });
 
-      await ctx.reply(
-        "📣 Broadcast panel\n\n1) 'Yuborishni boshlash' ni bosing.\n2) Keyin bitta xabar yozing.\n3) Xabar /start bosgan hamma userlarga yuboriladi.",
-        {
-          ...adminBroadcastInlineKeyboard(),
-        }
-      );
+      await ctx.reply(t(lang, 'adminBroadcastPanel'), {
+        ...adminBroadcastInlineKeyboard(lang),
+      });
     } catch (err) {
       await replyWithError(ctx, err, { context: 'broadcast_command' });
     }
@@ -243,19 +252,20 @@ function registerAdmin(bot, deps) {
       if (!state || state.step !== FLOW_STEPS.ADMIN_BROADCAST_WAIT_TEXT) {
         return next();
       }
+      const lang = normalizeLang(state?.language);
 
       const message = text.trim();
       if (!message) {
-        await ctx.reply("Xabar bo'sh bo'lmasin.");
+        await ctx.reply(t(lang, 'adminBroadcastEmpty'));
         return;
       }
 
-      const result = await broadcastToKnownUsers(ctx.telegram, `📢 Admin xabari:\n\n${message}`);
-      await clearFlow(uid);
-      await ctx.reply(
-        `✅ Broadcast yakunlandi.\nJami: ${result.total}\nYuborildi: ${result.sent}\nXatolik: ${result.failed}`,
-        mainReplyKeyboard(true)
+      const result = await broadcastToKnownUsers(
+        ctx.telegram,
+        `📢 ${t(lang, 'reportTitle')} (admin)\n\n${message}`
       );
+      await clearFlow(uid);
+      await ctx.reply(t(lang, 'adminBroadcastDone', result), mainReplyKeyboard(true));
     } catch (err) {
       await replyWithError(ctx, err, { context: 'broadcast_text' });
     }

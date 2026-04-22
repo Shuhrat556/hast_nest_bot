@@ -58,11 +58,17 @@ function roomsInlineKeyboard(rooms) {
   return Markup.inlineKeyboard(rows);
 }
 
-function adminBroadcastInlineKeyboard() {
+function adminBroadcastInlineKeyboard(lang = 'en') {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback('📣 Yuborishni boshlash', CALLBACK.adminBroadcastStart),
-      Markup.button.callback('❌ Bekor qilish', CALLBACK.adminBroadcastCancel),
+      Markup.button.callback(
+        t(lang, 'adminBroadcastStartBtn'),
+        CALLBACK.adminBroadcastStart
+      ),
+      Markup.button.callback(
+        t(lang, 'adminBroadcastCancelBtn'),
+        CALLBACK.adminBroadcastCancel
+      ),
     ],
   ]);
 }

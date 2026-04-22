@@ -343,8 +343,10 @@ async function handleReasonSelect(ctx, userId, data, groupId, adminId) {
 }
 
 async function handleAdminBroadcastStart(ctx, userId, adminId) {
+  const state = await getUserState(userId);
+  const lang = normalizeLang(state?.language);
   if (userId !== adminId) {
-    await ctx.answerCbQuery('Not allowed').catch(() => {});
+    await ctx.answerCbQuery(t(lang, 'adminNotAuthorized')).catch(() => {});
     return;
   }
   await upsertUserState(userId, {
@@ -352,33 +354,29 @@ async function handleAdminBroadcastStart(ctx, userId, adminId) {
   });
   await ctx.answerCbQuery().catch(() => {});
   try {
-    await ctx.editMessageText(
-      "📣 Broadcast mode yoqildi.\n\nBitta xabar yozing - botni /start qilgan hamma foydalanuvchilarga yuboraman.",
-      {
-        ...adminBroadcastInlineKeyboard(),
-      }
-    );
+    await ctx.editMessageText(t(lang, 'adminBroadcastPrompt'), {
+      ...adminBroadcastInlineKeyboard(lang),
+    });
   } catch (_) {
-    await ctx.reply(
-      "📣 Broadcast mode yoqildi.\n\nBitta xabar yozing - botni /start qilgan hamma foydalanuvchilarga yuboraman.",
-      {
-        ...adminBroadcastInlineKeyboard(),
-      }
-    );
+    await ctx.reply(t(lang, 'adminBroadcastPrompt'), {
+      ...adminBroadcastInlineKeyboard(lang),
+    });
   }
 }
 
 async function handleAdminBroadcastCancel(ctx, userId, adminId) {
+  const state = await getUserState(userId);
+  const lang = normalizeLang(state?.language);
   if (userId !== adminId) {
-    await ctx.answerCbQuery('Not allowed').catch(() => {});
+    await ctx.answerCbQuery(t(lang, 'adminNotAuthorized')).catch(() => {});
     return;
   }
   await clearFlow(userId);
-  await ctx.answerCbQuery('Bekor qilindi').catch(() => {});
+  await ctx.answerCbQuery(t(lang, 'adminBroadcastCancelled')).catch(() => {});
   try {
-    await ctx.editMessageText('Broadcast bekor qilindi.');
+    await ctx.editMessageText(t(lang, 'adminBroadcastCancelled'));
   } catch (_) {
-    await ctx.reply('Broadcast bekor qilindi.', mainReplyKeyboard(true));
+    await ctx.reply(t(lang, 'adminBroadcastCancelled'), mainReplyKeyboard(true));
   }
 }
 

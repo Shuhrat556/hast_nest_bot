@@ -30,10 +30,26 @@ const DICT = {
     reportReason: 'Reason',
     reasonPresetOutside: 'Outside the room',
     reasonPresetSick: 'Sick',
-    reasonPresetNoReason: 'Besabab',
+    reasonPresetNoReason: 'No reason',
     reasonPresetCustom: 'Write manually',
-    reasonPresetOutsideReport: 'Xona raftagi',
-    reasonPresetNoReasonReport: 'Toza karda shudaand',
+    reasonPresetOutsideReport: 'Outside the room',
+    reasonPresetNoReasonReport: 'No reason',
+    adminNotAuthorized: 'You are not authorized to use this command.',
+    adminRoomsEmpty: 'No rooms found. Use /setroom to add rooms.',
+    adminRoomNotFound: 'Room #{id} was not found.',
+    adminRoomDeleted: '🗑️ Room #{id} deleted.',
+    adminDataCleaned:
+      '🧹 Data cleaned.\nRenamed: {renamed}\nRemoved duplicates: {removedDuplicates}\nNormalized IDs: {normalizedIds}\nFixed capacities: {fixedCapacities}\nTotal rooms: {totalRooms}',
+    adminBroadcastStartBtn: '📣 Start broadcast',
+    adminBroadcastCancelBtn: '❌ Cancel',
+    adminBroadcastPanel:
+      '📣 Broadcast panel\n\n1) Press Start broadcast.\n2) Send one message.\n3) The message will be sent to all users who started the bot.',
+    adminBroadcastPrompt:
+      '📣 Broadcast mode enabled.\n\nSend one message and it will be delivered to all users who started the bot.',
+    adminBroadcastCancelled: 'Broadcast cancelled.',
+    adminBroadcastEmpty: 'Message cannot be empty.',
+    adminBroadcastDone:
+      '✅ Broadcast completed.\nTotal: {total}\nSent: {sent}\nFailed: {failed}',
     dailyReminder:
       '🌟 Please do your Hast-Nest report for today.\nIt is your daily duty, and your update helps the whole team. Thank you!',
     dailySummaryReminder:
@@ -66,12 +82,28 @@ const DICT = {
     reportAllPresent: 'Все на месте',
     reportMissing: 'Отсутствует',
     reportReason: 'Причина',
-    reasonPresetOutside: 'Xona raftagi',
+    reasonPresetOutside: 'Вне комнаты',
     reasonPresetSick: 'Болен',
-    reasonPresetNoReason: 'Besabab',
+    reasonPresetNoReason: 'Без причины',
     reasonPresetCustom: 'Написать вручную',
-    reasonPresetOutsideReport: 'Xona raftagi',
-    reasonPresetNoReasonReport: 'Toza karda shudaand',
+    reasonPresetOutsideReport: 'Вне комнаты',
+    reasonPresetNoReasonReport: 'Без причины',
+    adminNotAuthorized: 'У вас нет доступа к этой команде.',
+    adminRoomsEmpty: 'Комнаты не найдены. Используйте /setroom для добавления.',
+    adminRoomNotFound: 'Комната #{id} не найдена.',
+    adminRoomDeleted: '🗑️ Комната #{id} удалена.',
+    adminDataCleaned:
+      '🧹 Данные очищены.\nПереименовано: {renamed}\nУдалено дубликатов: {removedDuplicates}\nНормализовано ID: {normalizedIds}\nИсправлено вместимостей: {fixedCapacities}\nВсего комнат: {totalRooms}',
+    adminBroadcastStartBtn: '📣 Начать рассылку',
+    adminBroadcastCancelBtn: '❌ Отмена',
+    adminBroadcastPanel:
+      '📣 Панель рассылки\n\n1) Нажмите "Начать рассылку".\n2) Отправьте одно сообщение.\n3) Сообщение получат все пользователи, которые запускали бота.',
+    adminBroadcastPrompt:
+      '📣 Режим рассылки включен.\n\nОтправьте одно сообщение, и оно будет доставлено всем пользователям, запустившим бота.',
+    adminBroadcastCancelled: 'Рассылка отменена.',
+    adminBroadcastEmpty: 'Сообщение не может быть пустым.',
+    adminBroadcastDone:
+      '✅ Рассылка завершена.\nВсего: {total}\nОтправлено: {sent}\nОшибок: {failed}',
     dailyReminder:
       '🌟 Пожалуйста, сделайте сегодня отчет Hast-Nest.\nЭто ваша ежедневная задача, и ваш отчет важен для всей команды. Спасибо!',
     dailySummaryReminder:
@@ -104,12 +136,28 @@ const DICT = {
     reportAllPresent: 'Ҳама ҳозир',
     reportMissing: 'Намерасад',
     reportReason: 'Сабаб',
-    reasonPresetOutside: 'Xona raftagi',
+    reasonPresetOutside: 'Берун аз ҳуҷра',
     reasonPresetSick: 'Бемор аст',
-    reasonPresetNoReason: 'Besabab',
+    reasonPresetNoReason: 'Бе сабаб',
     reasonPresetCustom: 'Худам менависам',
-    reasonPresetOutsideReport: 'Xona raftagi',
-    reasonPresetNoReasonReport: 'Toza karda shudaand',
+    reasonPresetOutsideReport: 'Берун аз ҳуҷра',
+    reasonPresetNoReasonReport: 'Бе сабаб',
+    adminNotAuthorized: 'Шумо барои ин фармон иҷозат надоред.',
+    adminRoomsEmpty: 'Ҳуҷраҳо ёфт нашуданд. Барои илова /setroom-ро истифода баред.',
+    adminRoomNotFound: 'Ҳуҷраи #{id} ёфт нашуд.',
+    adminRoomDeleted: '🗑️ Ҳуҷраи #{id} ҳазф шуд.',
+    adminDataCleaned:
+      '🧹 Маълумот тоза шуд.\nНомивазкунӣ: {renamed}\nНестшудаи такрорӣ: {removedDuplicates}\nID-и муътадилшуда: {normalizedIds}\nИқтидорҳои ислоҳшуда: {fixedCapacities}\nҲамагӣ ҳуҷраҳо: {totalRooms}',
+    adminBroadcastStartBtn: '📣 Оғози паҳнкунӣ',
+    adminBroadcastCancelBtn: '❌ Бекор кардан',
+    adminBroadcastPanel:
+      '📣 Панели паҳнкунӣ\n\n1) "Оғози паҳнкунӣ"-ро пахш кунед.\n2) Як паём фиристед.\n3) Паём ба ҳамаи корбароне, ки ботро оғоз кардаанд, меравад.',
+    adminBroadcastPrompt:
+      '📣 Ҳолати паҳнкунӣ фаъол шуд.\n\nЯк паём фиристед ва он ба ҳамаи корбароне, ки ботро оғоз кардаанд, ирсол мешавад.',
+    adminBroadcastCancelled: 'Паҳнкунӣ бекор шуд.',
+    adminBroadcastEmpty: 'Паём набояд холӣ бошад.',
+    adminBroadcastDone:
+      '✅ Паҳнкунӣ анҷом ёфт.\nҲамагӣ: {total}\nФиристода шуд: {sent}\nХатоҳо: {failed}',
     dailyReminder:
       '🌟 Лутфан имрӯз ҳисоботи Hast-Nest-ро иҷро кунед.\nИн вазифаи ҳаррӯзаи шумост ва хабар додани шумо барои тамоми даста муҳим аст. Раҳмат!',
     dailySummaryReminder:
