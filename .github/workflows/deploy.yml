@@ -40,6 +40,17 @@ jobs:
           script: |
             set -e
             cd /root/hast_nest_bot
-            git pull origin main
-            docker compose down
-            docker compose up -d --build
+            git checkout main
+            git pull --ff-only origin main
+
+            cd /root/hast_nest_bot/bot
+            npm ci --omit=dev
+
+            cd /root/hast_nest_bot
+            if pm2 describe mybot > /dev/null 2>&1; then
+              pm2 restart mybot --update-env
+            else
+              pm2 start ecosystem.config.js --only mybot
+            fi
+            pm2 save
+            pm2 status mybot
