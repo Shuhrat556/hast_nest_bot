@@ -27,10 +27,10 @@ function removeReplyKeyboard() {
 function languageInlineKeyboard() {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback('🇷🇺 Русский', `${CALLBACK.langPrefix}ru`),
-      Markup.button.callback('🇹🇯 Тоҷикӣ', `${CALLBACK.langPrefix}tj`),
+      Markup.button.callback('Русский', `${CALLBACK.langPrefix}ru`),
+      Markup.button.callback('Тоҷикӣ', `${CALLBACK.langPrefix}tj`),
     ],
-    [Markup.button.callback('🇬🇧 English', `${CALLBACK.langPrefix}en`)],
+    [Markup.button.callback('English', `${CALLBACK.langPrefix}en`)],
   ]);
 }
 
@@ -81,9 +81,9 @@ function countInlineKeyboard(max) {
   const safeMax = Math.max(0, Math.floor(Number(max)) || 0);
   const row = [];
   for (let n = safeMax; n >= 0; n -= 1) {
-    let label = `👤 ${n}`;
-    if (n === safeMax) label = `✅ ${n}`;
-    if (n === 0) label = '⭕ 0';
+    let label = `${n}`;
+    if (n === safeMax) label = `${n}`;
+    if (n === 0) label = '0';
     row.push(Markup.button.callback(label, `${CALLBACK.countPrefix}${n}`));
   }
   /** @type {import('telegraf/typings/markup').InlineKeyboardButton[][]} */
@@ -102,25 +102,25 @@ function reasonInlineKeyboard(lang) {
   return Markup.inlineKeyboard([
     [
       Markup.button.callback(
-        `🚶 ${t(lang, 'reasonPresetOutside')}`,
+        t(lang, 'reasonPresetOutside'),
         `${CALLBACK.reasonPrefix}outside`
       ),
     ],
     [
       Markup.button.callback(
-        `🤒 ${t(lang, 'reasonPresetSick')}`,
+        t(lang, 'reasonPresetSick'),
         `${CALLBACK.reasonPrefix}sick`
       ),
     ],
     [
       Markup.button.callback(
-        `❔ ${t(lang, 'reasonPresetNoReason')}`,
+        t(lang, 'reasonPresetNoReason'),
         `${CALLBACK.reasonPrefix}no_reason`
       ),
     ],
     [
       Markup.button.callback(
-        `✍️ ${t(lang, 'reasonPresetCustom')}`,
+        t(lang, 'reasonPresetCustom'),
         `${CALLBACK.reasonPrefix}custom`
       ),
     ],

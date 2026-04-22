@@ -14,7 +14,7 @@ function toShortRoom(room) {
  */
 function formatFullReport(p) {
   const roomShort = toShortRoom(p.room);
-  return `🆔 ${p.reportId}\nБот ${roomShort} - и код ${p.max}\n✅ Ҳамааш тайёр`;
+  return `ID ${p.reportId}\nБот ${roomShort} - и код ${p.max}\nҲамааш тайёр`;
 }
 
 /**
@@ -23,7 +23,7 @@ function formatFullReport(p) {
 function formatPartialReport(p) {
   const roomShort = toShortRoom(p.room);
   return (
-    `🆔 ${p.reportId}\n` +
+    `ID ${p.reportId}\n` +
     `Бот ${roomShort} - и код ${p.max}\n` +
     `${p.missing} код тайёр нест\n` +
     `Сабаб: ${p.reason}`

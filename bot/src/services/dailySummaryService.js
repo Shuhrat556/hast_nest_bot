@@ -50,8 +50,8 @@ function startDailySummaryJob(bot, cfg) {
 
     const groupText =
       missingNames.length === 0
-        ? '✅ Имрӯз ҳамаи комнатаҳо ҳисобот супориданд.'
-        : `⏰ Соат 22:00.\n📋 Ҳисобот супорида нашуд:\n${missingNames
+        ? 'Имрӯз ҳамаи комнатаҳо ҳисобот супориданд.'
+        : `Соат 22:00.\nҲисобот супорида нашуд:\n${missingNames
             .map((n) => `- ${n}`)
             .join('\n')}`;
 

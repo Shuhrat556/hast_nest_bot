@@ -129,7 +129,7 @@ function registerAdmin(bot, deps) {
       }
 
       const lines = rooms.map(
-        (r) => `#${r.roomId} | ${canonicalRoomName(r.name)} | 👥 ${r.capacity}`
+        (r) => `#${r.roomId} | ${canonicalRoomName(r.name)} | ${r.capacity}`
       );
       await ctx.reply(`📋 Rooms:\n${lines.join('\n')}`);
     } catch (err) {
@@ -167,7 +167,7 @@ function registerAdmin(bot, deps) {
         { $set: { roomId: id, name: normalizedName, capacity } },
         { upsert: true, new: true, runValidators: true }
       );
-      await ctx.reply(`✅ #${id} ${normalizedName} (${t(lang, 'reportPresent')}: ${capacity})`);
+      await ctx.reply(`#${id} ${normalizedName} (${t(lang, 'reportPresent')}: ${capacity})`);
     } catch (err) {
       if (err && err.code === 11000) {
         await ctx.reply('Duplicate room id/name. Try another id or name.');
@@ -262,7 +262,7 @@ function registerAdmin(bot, deps) {
 
       const result = await broadcastToKnownUsers(
         ctx.telegram,
-        `📢 ${t(lang, 'reportTitle')} (admin)\n\n${message}`
+        `${t(lang, 'reportTitle')} (admin)\n\n${message}`
       );
       await clearFlow(uid);
       await ctx.reply(t(lang, 'adminBroadcastDone', result), mainReplyKeyboard(true));
