@@ -30,7 +30,7 @@ function startDailySummaryJob(bot, cfg) {
       return;
     }
 
-    const rooms = await Room.find().sort({ name: 1 }).lean();
+    const rooms = await Room.find().sort({ roomId: 1, name: 1 }).lean();
     const users = await UserState.find().lean();
 
     const missingRooms = rooms.filter((room) => {

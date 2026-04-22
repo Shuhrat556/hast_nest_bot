@@ -29,13 +29,13 @@ function languageInlineKeyboard() {
 }
 
 /**
- * @param {Array<{ _id: import('mongoose').Types.ObjectId, name: string }>} rooms
+ * @param {Array<{ roomId: number, name: string, capacity: number }>} rooms
  */
 function roomsInlineKeyboard(rooms) {
   const buttons = rooms.map((r) =>
     Markup.button.callback(
-      `🏠 ${r.name}  •  👥 ${r.capacity}`,
-      `${CALLBACK.roomPrefix}${r._id.toString()}`
+      `🏠 ${r.roomId}. ${r.name}  •  👥 ${r.capacity}`,
+      `${CALLBACK.roomPrefix}${r.roomId}`
     )
   );
   const rows = [];

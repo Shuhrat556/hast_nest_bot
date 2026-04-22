@@ -20,7 +20,7 @@ const { getLogger } = require('../utils/logger');
 const { replyWithError } = require('../utils/handlerErrors');
 const { SUPPORTED_LANGS, normalizeLang, t } = require('../utils/i18n');
 const {
-  objectIdStringSchema,
+  roomIdCallbackSchema,
   countCallbackSchema,
 } = require('../validation/schemas');
 const { AppError } = require('../errors/AppError');
@@ -92,7 +92,7 @@ async function handleLanguageSelect(ctx, userId, data) {
     missing: null,
   });
 
-  const rooms = await Room.find().sort({ name: 1 }).lean();
+  const rooms = await Room.find().sort({ roomId: 1, name: 1 }).lean();
   await ctx.answerCbQuery().catch(() => {});
 
   if (!rooms.length) {
@@ -122,14 +122,14 @@ async function handleRoomSelect(ctx, userId, data) {
   const log = getLogger();
   const state = await getUserState(userId);
   const lang = normalizeLang(state?.language);
-  const idStr = data.slice(CALLBACK.roomPrefix.length);
-  const idParsed = objectIdStringSchema.safeParse(idStr);
-  if (!idParsed.success) {
+  const roomIdStr = data.slice(CALLBACK.roomPrefix.length);
+  const roomIdParsed = roomIdCallbackSchema.safeParse(roomIdStr);
+  if (!roomIdParsed.success) {
     await ctx.answerCbQuery(t(lang, 'invalidRoom')).catch(() => {});
     return;
   }
 
-  const room = await Room.findById(idParsed.data).lean();
+  const room = await Room.findOne({ roomId: roomIdParsed.data }).lean();
   if (!room) {
     await ctx.answerCbQuery(t(lang, 'roomNotFound')).catch(() => {});
     return;

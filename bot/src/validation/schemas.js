@@ -50,10 +50,10 @@ const reasonTextSchema = z
   .transform((s) => s.trim())
   .pipe(z.string().min(1, 'Reason cannot be empty'));
 
-const objectIdStringSchema = z
-  .string()
-  .min(1)
-  .regex(/^[a-fA-F0-9]{24}$/, 'Invalid room id');
+const roomIdCallbackSchema = z.coerce
+  .number()
+  .int('Invalid room id')
+  .min(1, 'Invalid room id');
 
 const countCallbackSchema = z.coerce
   .number()
@@ -72,7 +72,7 @@ module.exports = {
   addRoomPayloadSchema,
   parseAddRoomCommand,
   reasonTextSchema,
-  objectIdStringSchema,
+  roomIdCallbackSchema,
   countCallbackSchema,
   formatZodError,
 };

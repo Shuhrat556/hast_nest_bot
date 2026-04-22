@@ -3,7 +3,7 @@
 A production-oriented [Telegraf](https://telegraf.js.org/) bot that collects room selection, headcount, and optional absence reasons, then posts a formatted summary to a Telegram group. State is stored in MongoDB via Mongoose.
 
 On first `/start`, users choose language (`Русский`, `Тоҷикӣ`, `English`). The bot also auto-seeds default rooms on startup:
-`Komnata 1..8` and `Ma'muriyat`.
+`#1 K 1` .. `#8 K 8`, plus `#9 Ma'muriyat`.
 
 ## Prerequisites
 

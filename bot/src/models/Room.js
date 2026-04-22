@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 
 const roomSchema = new mongoose.Schema(
   {
+    roomId: {
+      type: Number,
+      required: true,
+      unique: true,
+      sparse: true,
+      min: 1,
+    },
     name: {
       type: String,
       required: true,

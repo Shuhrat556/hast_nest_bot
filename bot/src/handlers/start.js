@@ -55,7 +55,7 @@ async function showStartFlow(ctx) {
     return;
   }
 
-  const rooms = await Room.find().sort({ name: 1 }).lean();
+  const rooms = await Room.find().sort({ roomId: 1, name: 1 }).lean();
 
   if (!rooms.length) {
     await upsertUserState(userId, { step: 'idle' });
