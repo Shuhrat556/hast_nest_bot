@@ -40,6 +40,14 @@ jobs:
           script: |
             set -e
             cd /root/hast_nest_bot
+
+            # One-time safety: remove legacy untracked files that block pull.
+            for f in Dockerfile ecosystem.config.js; do
+              if [ -e "$f" ] && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+                rm -f "$f"
+              fi
+            done
+
             git checkout main
             git pull --ff-only origin main
 
