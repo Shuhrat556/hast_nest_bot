@@ -11,12 +11,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render deploy hook
+      - name: Check Render deploy hook
+        id: render_hook
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
-            echo "RENDER_DEPLOY_HOOK_URL secret is not set."
-            exit 1
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Render deploy hook is not configured; skipping Render deploy."
+            exit 0
           fi
+
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Render deploy hook
+        if: steps.render_hook.outputs.configured == 'true'
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
           curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
