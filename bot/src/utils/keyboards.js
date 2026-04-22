@@ -38,15 +38,22 @@ function languageInlineKeyboard() {
  * @param {Array<{ roomId: number, name: string, capacity: number }>} rooms
  */
 function roomsInlineKeyboard(rooms) {
+  const toCompactName = (name) => {
+    const raw = String(name || '').trim();
+    const m = raw.match(/^k\s*(\d+)$/i);
+    if (m) return `K${m[1]}`;
+    return raw;
+  };
+
   const buttons = rooms.map((r) =>
     Markup.button.callback(
-      `🏠 #${r.roomId} ${r.name} • 👥 ${r.capacity}`,
+      toCompactName(r.name),
       `${CALLBACK.roomPrefix}${r.roomId}`
     )
   );
   const rows = [];
-  for (let i = 0; i < buttons.length; i += 2) {
-    rows.push(buttons.slice(i, i + 2));
+  for (let i = 0; i < buttons.length; i += 4) {
+    rows.push(buttons.slice(i, i + 4));
   }
   return Markup.inlineKeyboard(rows);
 }
