@@ -10,22 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate deploy secrets
+      - name: Check deploy secrets
+        id: deploy_secrets
         env:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
           if [ -z "$SERVER_IP" ]; then
-            echo "::error::Missing GitHub secret SERVER_IP. Add your server IP or hostname in Settings > Secrets and variables > Actions."
-            exit 1
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SERVER_IP secret is not configured; skipping SSH deploy."
+            exit 0
           fi
 
           if [ -z "$SSH_KEY" ]; then
-            echo "::error::Missing GitHub secret SSH_KEY. Add the private key allowed to SSH into the server."
-            exit 1
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SSH_KEY secret is not configured; skipping SSH deploy."
+            exit 0
           fi
 
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
       - name: SSH Deploy
+        if: steps.deploy_secrets.outputs.configured == 'true'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
