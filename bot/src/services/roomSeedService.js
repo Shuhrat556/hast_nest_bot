@@ -1,81 +1,84 @@
 const Room = require('../models/Room');
 const { getLogger } = require('../utils/logger');
-const { assignMissingRoomIds } = require('./roomIdService');
+const { canonicalRoomName } = require('./roomService');
 
-function getLegacyDefaultName(roomId) {
-  return `K${'omnata'} ${roomId}`;
-}
-
-const DEFAULT_ROOMS = [
-  { roomId: 1, name: 'K 1', capacity: 6, legacyNames: [getLegacyDefaultName(1)] },
-  { roomId: 2, name: 'K 2', capacity: 8, legacyNames: [getLegacyDefaultName(2)] },
-  { roomId: 3, name: 'K 3', capacity: 6, legacyNames: [getLegacyDefaultName(3)] },
-  { roomId: 4, name: 'K 4', capacity: 10, legacyNames: [getLegacyDefaultName(4)] },
-  { roomId: 5, name: 'K 5', capacity: 4, legacyNames: [getLegacyDefaultName(5)] },
-  { roomId: 6, name: 'K 6', capacity: 8, legacyNames: [getLegacyDefaultName(6)] },
-  { roomId: 7, name: 'K 7', capacity: 6, legacyNames: [getLegacyDefaultName(7)] },
-  { roomId: 8, name: 'K 8', capacity: 10, legacyNames: [getLegacyDefaultName(8)] },
-  { roomId: 9, name: "Ma'muriyat", capacity: 10 },
-];
-
-async function migrateLegacyRoomNames() {
+async function cleanupRoomData() {
   let renamed = 0;
   let removedDuplicates = 0;
-  let syncedDefaultIds = 0;
+  let normalizedIds = 0;
+  let fixedCapacities = 0;
 
-  for (const room of DEFAULT_ROOMS) {
-    const currentRoom = await Room.findOne({ name: room.name });
-    if (currentRoom && currentRoom.roomId !== room.roomId) {
-      currentRoom.roomId = room.roomId;
-      await currentRoom.save();
-      syncedDefaultIds += 1;
+  const allRooms = await Room.find().sort({ createdAt: 1, roomId: 1, name: 1 });
+  const canonicalBuckets = new Map();
+  for (const room of allRooms) {
+    const key = canonicalRoomName(room.name).toLowerCase();
+    const current = canonicalBuckets.get(key) || [];
+    current.push(room);
+    canonicalBuckets.set(key, current);
+  }
+
+  for (const bucket of canonicalBuckets.values()) {
+    if (!bucket.length) continue;
+    const canonicalName = canonicalRoomName(bucket[0].name);
+    let keeper = bucket.find((r) => r.name === canonicalName) || bucket[0];
+
+    const bestCapacity = Math.max(
+      0,
+      ...bucket.map((r) => (Number.isFinite(r.capacity) ? r.capacity : 0))
+    );
+
+    if (keeper.name !== canonicalName) {
+      keeper.name = canonicalName;
+      renamed += 1;
     }
+    if (keeper.capacity !== bestCapacity) {
+      keeper.capacity = bestCapacity;
+      fixedCapacities += 1;
+    }
+    await keeper.save();
 
-    for (const legacyName of room.legacyNames || []) {
-      const legacyRoom = await Room.findOne({ name: legacyName });
-      if (!legacyRoom) {
-        continue;
-      }
-
-      const targetRoom = await Room.findOne({ name: room.name });
-      if (!targetRoom) {
-        legacyRoom.name = room.name;
-        legacyRoom.roomId = room.roomId;
-        await legacyRoom.save();
-        renamed += 1;
-        continue;
-      }
-
-      await Room.deleteOne({ _id: legacyRoom._id });
+    for (const duplicate of bucket) {
+      if (String(duplicate._id) === String(keeper._id)) continue;
+      await Room.deleteOne({ _id: duplicate._id });
       removedDuplicates += 1;
     }
   }
 
-  return { renamed, removedDuplicates, syncedDefaultIds };
+  const remaining = await Room.find().sort({ roomId: 1, name: 1, createdAt: 1 });
+  const used = new Set();
+  let nextId = 1;
+
+  for (const room of remaining) {
+    let targetId = Number.isFinite(room.roomId) && room.roomId > 0 ? room.roomId : null;
+    if (!targetId || used.has(targetId)) {
+      while (used.has(nextId)) nextId += 1;
+      targetId = nextId;
+      nextId += 1;
+    }
+
+    if (room.roomId !== targetId) {
+      room.roomId = targetId;
+      await room.save();
+      normalizedIds += 1;
+    }
+    used.add(targetId);
+  }
+
+  return {
+    renamed,
+    removedDuplicates,
+    normalizedIds,
+    fixedCapacities,
+    totalRooms: remaining.length,
+  };
 }
 
 async function ensureDefaultRooms() {
   const log = getLogger();
-  const migration = await migrateLegacyRoomNames();
-  const ops = DEFAULT_ROOMS.map(({ roomId, name, capacity }) => ({
-    updateOne: {
-      filter: { name },
-      update: { $setOnInsert: { roomId, name, capacity } },
-      upsert: true,
-    },
-  }));
-
-  const result = await Room.bulkWrite(ops, { ordered: false });
-  const upserted = result.upsertedCount || 0;
-  const assignedMissingIds = await assignMissingRoomIds(DEFAULT_ROOMS.length + 1);
-  log.info('Default rooms seed completed', {
-    totalConfigured: DEFAULT_ROOMS.length,
-    inserted: upserted,
-    renamedLegacyRooms: migration.renamed,
-    removedLegacyDuplicates: migration.removedDuplicates,
-    syncedDefaultIds: migration.syncedDefaultIds,
-    assignedMissingIds,
+  const result = await cleanupRoomData();
+  log.info('Room data cleanup completed', {
+    ...result,
   });
 }
 
-module.exports = { DEFAULT_ROOMS, ensureDefaultRooms };
+module.exports = { ensureDefaultRooms, cleanupRoomData };

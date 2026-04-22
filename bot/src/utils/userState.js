@@ -2,6 +2,7 @@ const UserState = require('../models/UserState');
 const { getLogger } = require('./logger');
 const { AppError } = require('../errors/AppError');
 const { DATABASE } = require('../errors/codes');
+const { FLOW_STEPS } = require('../domain/flowSteps');
 
 /**
  * @param {number} userId
@@ -31,8 +32,9 @@ async function upsertUserState(userId, set) {
  */
 async function clearFlow(userId) {
   return upsertUserState(userId, {
-    step: 'idle',
+    step: FLOW_STEPS.IDLE,
     room: null,
+    roomId: null,
     max: null,
     count: null,
     missing: null,

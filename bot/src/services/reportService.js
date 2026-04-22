@@ -2,6 +2,7 @@ const { AppError } = require('../errors/AppError');
 const { TELEGRAM } = require('../errors/codes');
 const { formatFullReport, formatPartialReport } = require('../utils/report');
 const { getLogger } = require('../utils/logger');
+const { createHastNestReport } = require('./hastNestReportService');
 
 /**
  * @param {import('telegraf').Telegram} telegram
@@ -29,20 +30,30 @@ async function sendGroupMessage(telegram, groupId, text) {
 /**
  * @param {import('telegraf').Telegram} telegram
  * @param {string} groupId
- * @param {{ room: string, count: number, max: number }} payload
+ * @param {{ userId: number, roomId?: number | null, room: string, count: number, max: number, lang?: string }} payload
  */
 async function sendFullAttendanceReport(telegram, groupId, payload) {
-  const text = formatFullReport(payload);
+  const reportId = await createHastNestReport({
+    ...payload,
+    missing: 0,
+    reason: null,
+    kind: 'full',
+  });
+  const text = formatFullReport({ ...payload, reportId });
   await sendGroupMessage(telegram, groupId, text);
 }
 
 /**
  * @param {import('telegraf').Telegram} telegram
  * @param {string} groupId
- * @param {{ room: string, count: number, max: number, missing: number, reason: string }} payload
+ * @param {{ userId: number, roomId?: number | null, room: string, count: number, max: number, missing: number, reason: string, lang?: string }} payload
  */
 async function sendPartialAttendanceReport(telegram, groupId, payload) {
-  const text = formatPartialReport(payload);
+  const reportId = await createHastNestReport({
+    ...payload,
+    kind: 'partial',
+  });
+  const text = formatPartialReport({ ...payload, reportId });
   await sendGroupMessage(telegram, groupId, text);
 }
 

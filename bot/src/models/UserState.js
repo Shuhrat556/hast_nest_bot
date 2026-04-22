@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const { FLOW_STEPS } = require('../domain/flowSteps');
 
-const STEPS = ['idle', 'choose_language', 'choose_room', 'choose_count', 'await_reason'];
+const STEPS = Object.values(FLOW_STEPS);
 
 /**
  * step:
@@ -32,6 +33,12 @@ const userStateSchema = new mongoose.Schema(
       type: String,
       default: null,
       maxlength: 200,
+    },
+    roomId: {
+      type: Number,
+      default: null,
+      min: 1,
+      index: true,
     },
     max: {
       type: Number,

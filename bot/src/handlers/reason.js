@@ -3,13 +3,14 @@ const { sendPartialAttendanceReport } = require('../services/reportService');
 const { replyWithError } = require('../utils/handlerErrors');
 const { normalizeLang, t } = require('../utils/i18n');
 const { mainReplyKeyboard } = require('../utils/keyboards');
+const { FLOW_STEPS } = require('../domain/flowSteps');
 
 /**
  * @param {import('telegraf').Telegraf} bot
- * @param {{ groupId: string }} deps
+ * @param {{ groupId: string, adminId: number }} deps
  */
 function registerReason(bot, deps) {
-  const { groupId } = deps;
+  const { groupId, adminId } = deps;
 
   bot.on('text', async (ctx, next) => {
     try {
@@ -28,7 +29,7 @@ function registerReason(bot, deps) {
       }
 
       const state = await getUserState(userId);
-      if (!state || state.step !== 'await_reason') {
+      if (!state || state.step !== FLOW_STEPS.AWAIT_REASON) {
         return next();
       }
 
@@ -50,6 +51,8 @@ function registerReason(bot, deps) {
 
       try {
         await sendPartialAttendanceReport(ctx.telegram, groupId, {
+          userId,
+          roomId: state.roomId,
           room,
           count,
           max,
@@ -65,7 +68,7 @@ function registerReason(bot, deps) {
 
       await clearFlow(userId);
 
-      await ctx.reply(t(lang, 'reportSentPartial'), mainReplyKeyboard()).catch(() => {});
+      await ctx.reply(t(lang, 'reportSentPartial'), mainReplyKeyboard(userId === adminId)).catch(() => {});
     } catch (err) {
       await replyWithError(ctx, err, { context: 'reason' });
     }

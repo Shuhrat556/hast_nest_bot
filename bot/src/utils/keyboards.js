@@ -6,10 +6,16 @@ const CALLBACK = {
   roomPrefix: 'room:',
   countPrefix: 'cnt:',
   reasonPrefix: 'rsn:',
+  adminBroadcastStart: 'admin:broadcast:start',
+  adminBroadcastCancel: 'admin:broadcast:cancel',
 };
 
-function mainReplyKeyboard() {
-  return Markup.keyboard([['/start', '/language']])
+function mainReplyKeyboard(isAdmin = false) {
+  const rows = [['/start', '/language']];
+  if (isAdmin) {
+    rows.push(['/broadcast']);
+  }
+  return Markup.keyboard(rows)
     .resize()
     .persistent();
 }
@@ -34,7 +40,7 @@ function languageInlineKeyboard() {
 function roomsInlineKeyboard(rooms) {
   const buttons = rooms.map((r) =>
     Markup.button.callback(
-      `🏠 ${r.roomId}. ${r.name}  •  👥 ${r.capacity}`,
+      `🏠 #${r.roomId} ${r.name} • 👥 ${r.capacity}`,
       `${CALLBACK.roomPrefix}${r.roomId}`
     )
   );
@@ -43,6 +49,15 @@ function roomsInlineKeyboard(rooms) {
     rows.push(buttons.slice(i, i + 2));
   }
   return Markup.inlineKeyboard(rows);
+}
+
+function adminBroadcastInlineKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback('📣 Yuborishni boshlash', CALLBACK.adminBroadcastStart),
+      Markup.button.callback('❌ Bekor qilish', CALLBACK.adminBroadcastCancel),
+    ],
+  ]);
 }
 
 /**
@@ -107,4 +122,5 @@ module.exports = {
   roomsInlineKeyboard,
   countInlineKeyboard,
   reasonInlineKeyboard,
+  adminBroadcastInlineKeyboard,
 };

@@ -1,4 +1,3 @@
-const Room = require('../models/Room');
 const {
   languageInlineKeyboard,
   mainReplyKeyboard,
@@ -7,14 +6,18 @@ const {
 const { getUserState, upsertUserState } = require('../utils/userState');
 const { replyWithError } = require('../utils/handlerErrors');
 const { normalizeLang, t } = require('../utils/i18n');
+const { getRoomsForSelection } = require('../services/roomService');
+const { FLOW_STEPS } = require('../domain/flowSteps');
 
 /**
  * @param {import('telegraf').Telegraf} bot
+ * @param {{ adminId: number }} deps
  */
-function registerStart(bot) {
+function registerStart(bot, deps) {
+  const { adminId } = deps;
   bot.start(async (ctx) => {
     try {
-      await showStartFlow(ctx);
+      await showStartFlow(ctx, adminId);
     } catch (err) {
       await replyWithError(ctx, err, { context: 'start' });
     }
@@ -24,8 +27,8 @@ function registerStart(bot) {
     try {
       const userId = ctx.from?.id;
       if (!userId) return;
-      await upsertUserState(userId, { step: 'choose_language' });
-      await ctx.reply('Menu:', mainReplyKeyboard());
+      await upsertUserState(userId, { step: FLOW_STEPS.CHOOSE_LANGUAGE });
+      await ctx.reply('Menu:', mainReplyKeyboard(userId === adminId));
       await ctx.reply(t('en', 'chooseLanguage'), languageInlineKeyboard());
     } catch (err) {
       await replyWithError(ctx, err, { context: 'language_command' });
@@ -35,8 +38,9 @@ function registerStart(bot) {
 
 /**
  * @param {import('telegraf').Context} ctx
+ * @param {number} adminId
  */
-async function showStartFlow(ctx) {
+async function showStartFlow(ctx, adminId) {
   const userId = ctx.from?.id;
   if (!userId) {
     return;
@@ -47,25 +51,25 @@ async function showStartFlow(ctx) {
 
   if (!currentState?.language) {
     await upsertUserState(userId, {
-      step: 'choose_language',
+      step: FLOW_STEPS.CHOOSE_LANGUAGE,
       language: null,
     });
-    await ctx.reply('Menu:', mainReplyKeyboard());
+    await ctx.reply('Menu:', mainReplyKeyboard(userId === adminId));
     await ctx.reply(t('en', 'chooseLanguage'), languageInlineKeyboard());
     return;
   }
 
-  const rooms = await Room.find().sort({ roomId: 1, name: 1 }).lean();
+  const rooms = await getRoomsForSelection();
 
   if (!rooms.length) {
-    await upsertUserState(userId, { step: 'idle' });
-    await ctx.reply(t(lang, 'noRooms'), mainReplyKeyboard());
+    await upsertUserState(userId, { step: FLOW_STEPS.IDLE });
+    await ctx.reply(t(lang, 'noRooms'), mainReplyKeyboard(userId === adminId));
     return;
   }
 
-  await upsertUserState(userId, { step: 'choose_room' });
+  await upsertUserState(userId, { step: FLOW_STEPS.CHOOSE_ROOM });
 
-  await ctx.reply('Menu:', mainReplyKeyboard());
+  await ctx.reply('Menu:', mainReplyKeyboard(userId === adminId));
   await ctx.reply(t(lang, 'selectRoom'), roomsInlineKeyboard(rooms));
 }
 

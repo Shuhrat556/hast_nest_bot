@@ -1,6 +1,7 @@
 const Room = require('../models/Room');
 const {
   CALLBACK,
+  adminBroadcastInlineKeyboard,
   countInlineKeyboard,
   mainReplyKeyboard,
   reasonInlineKeyboard,
@@ -25,13 +26,15 @@ const {
 } = require('../validation/schemas');
 const { AppError } = require('../errors/AppError');
 const { VALIDATION } = require('../errors/codes');
+const { getRoomsForSelection } = require('../services/roomService');
+const { FLOW_STEPS } = require('../domain/flowSteps');
 
 /**
  * @param {import('telegraf').Telegraf} bot
- * @param {{ groupId: string }} deps
+ * @param {{ groupId: string, adminId: number }} deps
  */
 function registerCallbacks(bot, deps) {
-  const { groupId } = deps;
+  const { groupId, adminId } = deps;
 
   bot.on('callback_query', async (ctx) => {
     try {
@@ -53,12 +56,22 @@ function registerCallbacks(bot, deps) {
       }
 
       if (data.startsWith(CALLBACK.countPrefix)) {
-        await handleCountSelect(ctx, userId, data, groupId);
+        await handleCountSelect(ctx, userId, data, groupId, adminId);
         return;
       }
 
       if (data.startsWith(CALLBACK.reasonPrefix)) {
-        await handleReasonSelect(ctx, userId, data, groupId);
+        await handleReasonSelect(ctx, userId, data, groupId, adminId);
+        return;
+      }
+
+      if (data === CALLBACK.adminBroadcastStart) {
+        await handleAdminBroadcastStart(ctx, userId, adminId);
+        return;
+      }
+
+      if (data === CALLBACK.adminBroadcastCancel) {
+        await handleAdminBroadcastCancel(ctx, userId, adminId);
         return;
       }
 
@@ -85,18 +98,19 @@ async function handleLanguageSelect(ctx, userId, data) {
 
   await upsertUserState(userId, {
     language: langCode,
-    step: 'choose_room',
+    step: FLOW_STEPS.CHOOSE_ROOM,
     room: null,
+    roomId: null,
     max: null,
     count: null,
     missing: null,
   });
 
-  const rooms = await Room.find().sort({ roomId: 1, name: 1 }).lean();
+  const rooms = await getRoomsForSelection();
   await ctx.answerCbQuery().catch(() => {});
 
   if (!rooms.length) {
-    await upsertUserState(userId, { step: 'idle' });
+    await upsertUserState(userId, { step: FLOW_STEPS.IDLE });
     try {
       await ctx.editMessageText(`${t(langCode, 'languageSet')}\n\n${t(langCode, 'noRooms')}`);
     } catch (_) {
@@ -136,8 +150,9 @@ async function handleRoomSelect(ctx, userId, data) {
   }
 
   await upsertUserState(userId, {
-    step: 'choose_count',
+    step: FLOW_STEPS.CHOOSE_COUNT,
     language: lang,
+    roomId: room.roomId,
     room: room.name,
     max: room.capacity,
     count: null,
@@ -170,12 +185,13 @@ async function handleRoomSelect(ctx, userId, data) {
  * @param {number} userId
  * @param {string} data
  * @param {string} groupId
+ * @param {number} adminId
  */
-async function handleCountSelect(ctx, userId, data, groupId) {
+async function handleCountSelect(ctx, userId, data, groupId, adminId) {
   const log = getLogger();
   const state = await getUserState(userId);
   const lang = normalizeLang(state?.language);
-  if (!state || state.step !== 'choose_count') {
+  if (!state || state.step !== FLOW_STEPS.CHOOSE_COUNT) {
     await ctx.answerCbQuery(t(lang, 'tapStart')).catch(() => {});
     return;
   }
@@ -197,7 +213,7 @@ async function handleCountSelect(ctx, userId, data, groupId) {
   const missing = max - count;
 
   await upsertUserState(userId, {
-    step: missing === 0 ? 'idle' : 'await_reason',
+    step: missing === 0 ? FLOW_STEPS.IDLE : FLOW_STEPS.AWAIT_REASON,
     language: lang,
     count,
     missing,
@@ -217,6 +233,8 @@ async function handleCountSelect(ctx, userId, data, groupId) {
   if (missing === 0) {
     try {
       await sendFullAttendanceReport(ctx.telegram, groupId, {
+        userId,
+        roomId: state.roomId,
         room: state.room,
         count,
         max,
@@ -233,7 +251,7 @@ async function handleCountSelect(ctx, userId, data, groupId) {
         reply_markup: { inline_keyboard: [] },
       });
     } catch (e) {
-      await ctx.reply(t(lang, 'reportSentFull'), mainReplyKeyboard()).catch(() => {});
+      await ctx.reply(t(lang, 'reportSentFull'), mainReplyKeyboard(userId === adminId)).catch(() => {});
     }
 
     await clearFlow(userId);
@@ -262,11 +280,12 @@ async function handleCountSelect(ctx, userId, data, groupId) {
  * @param {number} userId
  * @param {string} data
  * @param {string} groupId
+ * @param {number} adminId
  */
-async function handleReasonSelect(ctx, userId, data, groupId) {
+async function handleReasonSelect(ctx, userId, data, groupId, adminId) {
   const state = await getUserState(userId);
   const lang = normalizeLang(state?.language);
-  if (!state || state.step !== 'await_reason') {
+  if (!state || state.step !== FLOW_STEPS.AWAIT_REASON) {
     await ctx.answerCbQuery(t(lang, 'tapStart')).catch(() => {});
     return;
   }
@@ -297,6 +316,8 @@ async function handleReasonSelect(ctx, userId, data, groupId) {
 
   try {
     await sendPartialAttendanceReport(ctx.telegram, groupId, {
+      userId,
+      roomId: state.roomId,
       room: state.room,
       count: state.count ?? 0,
       max: state.max ?? 0,
@@ -317,7 +338,47 @@ async function handleReasonSelect(ctx, userId, data, groupId) {
       reply_markup: { inline_keyboard: [] },
     });
   } catch (_) {
-    await ctx.reply(t(lang, 'reportSentPartial'), mainReplyKeyboard()).catch(() => {});
+    await ctx.reply(t(lang, 'reportSentPartial'), mainReplyKeyboard(userId === adminId)).catch(() => {});
+  }
+}
+
+async function handleAdminBroadcastStart(ctx, userId, adminId) {
+  if (userId !== adminId) {
+    await ctx.answerCbQuery('Not allowed').catch(() => {});
+    return;
+  }
+  await upsertUserState(userId, {
+    step: FLOW_STEPS.ADMIN_BROADCAST_WAIT_TEXT,
+  });
+  await ctx.answerCbQuery().catch(() => {});
+  try {
+    await ctx.editMessageText(
+      "📣 Broadcast mode yoqildi.\n\nBitta xabar yozing - botni /start qilgan hamma foydalanuvchilarga yuboraman.",
+      {
+        ...adminBroadcastInlineKeyboard(),
+      }
+    );
+  } catch (_) {
+    await ctx.reply(
+      "📣 Broadcast mode yoqildi.\n\nBitta xabar yozing - botni /start qilgan hamma foydalanuvchilarga yuboraman.",
+      {
+        ...adminBroadcastInlineKeyboard(),
+      }
+    );
+  }
+}
+
+async function handleAdminBroadcastCancel(ctx, userId, adminId) {
+  if (userId !== adminId) {
+    await ctx.answerCbQuery('Not allowed').catch(() => {});
+    return;
+  }
+  await clearFlow(userId);
+  await ctx.answerCbQuery('Bekor qilindi').catch(() => {});
+  try {
+    await ctx.editMessageText('Broadcast bekor qilindi.');
+  } catch (_) {
+    await ctx.reply('Broadcast bekor qilindi.', mainReplyKeyboard(true));
   }
 }
 

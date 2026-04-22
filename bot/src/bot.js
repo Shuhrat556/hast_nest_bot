@@ -78,10 +78,10 @@ async function main() {
     }).catch(() => {});
   });
 
-  registerStart(bot);
-  registerCallbacks(bot, { groupId: env.GROUP_ID });
+  registerStart(bot, { adminId: env.ADMIN_ID });
+  registerCallbacks(bot, { groupId: env.GROUP_ID, adminId: env.ADMIN_ID });
   registerAdmin(bot, { adminId: env.ADMIN_ID });
-  registerReason(bot, { groupId: env.GROUP_ID });
+  registerReason(bot, { groupId: env.GROUP_ID, adminId: env.ADMIN_ID });
   startReminderJob(bot);
   startDailySummaryJob(bot, {
     groupId: env.GROUP_ID,
