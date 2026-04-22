@@ -2,7 +2,7 @@ const Room = require('../models/Room');
 
 function canonicalRoomName(name) {
   const raw = String(name || '').trim();
-  const match = raw.match(/^k(?:omnata)?\s*(\d+)$/i);
+  const match = raw.match(/^(?:k(?:omnata)?|комната|хона|room)\s*(\d+)$/i);
   if (!match) return raw;
   return `K ${Number(match[1])}`;
 }

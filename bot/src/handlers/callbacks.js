@@ -26,7 +26,7 @@ const {
 } = require('../validation/schemas');
 const { AppError } = require('../errors/AppError');
 const { VALIDATION } = require('../errors/codes');
-const { getRoomsForSelection } = require('../services/roomService');
+const { canonicalRoomName, getRoomsForSelection } = require('../services/roomService');
 const { FLOW_STEPS } = require('../domain/flowSteps');
 
 /**
@@ -153,7 +153,7 @@ async function handleRoomSelect(ctx, userId, data) {
     step: FLOW_STEPS.CHOOSE_COUNT,
     language: lang,
     roomId: room.roomId,
-    room: room.name,
+    room: canonicalRoomName(room.name),
     max: room.capacity,
     count: null,
     missing: null,
@@ -162,7 +162,7 @@ async function handleRoomSelect(ctx, userId, data) {
   await ctx.answerCbQuery().catch(() => {});
 
   const text = t(lang, 'roomSelected', {
-    room: room.name,
+    room: canonicalRoomName(room.name),
     max: room.capacity,
   });
   try {

@@ -18,6 +18,7 @@ const {
 } = require('../utils/userState');
 const { broadcastToKnownUsers } = require('../services/broadcastService');
 const { cleanupRoomData } = require('../services/roomSeedService');
+const { canonicalRoomName } = require('../services/roomService');
 
 function parseSetRoomCommand(messageText) {
   const raw = typeof messageText === 'string' ? messageText : '';
@@ -119,7 +120,9 @@ function registerAdmin(bot, deps) {
         return;
       }
 
-      const lines = rooms.map((r) => `#${r.roomId} | ${r.name} | 👥 ${r.capacity}`);
+      const lines = rooms.map(
+        (r) => `#${r.roomId} | ${canonicalRoomName(r.name)} | 👥 ${r.capacity}`
+      );
       await ctx.reply(`📋 Rooms:\n${lines.join('\n')}`);
     } catch (err) {
       await replyWithError(ctx, err, { context: 'rooms_command' });
@@ -140,19 +143,20 @@ function registerAdmin(bot, deps) {
         return;
       }
 
-      const { id, name, capacity } = parsed.data;
-      const sameName = await Room.findOne({ name });
+      const { id, capacity } = parsed.data;
+      const normalizedName = canonicalRoomName(parsed.data.name);
+      const sameName = await Room.findOne({ name: normalizedName });
       if (sameName && sameName.roomId !== id) {
-        await ctx.reply(`Room name "${name}" already exists as #${sameName.roomId}.`);
+        await ctx.reply(`Room name "${normalizedName}" already exists as #${sameName.roomId}.`);
         return;
       }
 
       await Room.findOneAndUpdate(
         { roomId: id },
-        { $set: { roomId: id, name, capacity } },
+        { $set: { roomId: id, name: normalizedName, capacity } },
         { upsert: true, new: true, runValidators: true }
       );
-      await ctx.reply(`✅ Saved: #${id} ${name} (capacity ${capacity})`);
+      await ctx.reply(`✅ Saved: #${id} ${normalizedName} (capacity ${capacity})`);
     } catch (err) {
       if (err && err.code === 11000) {
         await ctx.reply('Duplicate room id/name. Try another id or name.');
